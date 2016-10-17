@@ -1,0 +1,53 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: rpg - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\WINDOWS\TEMP\RSP1005.TMP" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/rpg.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Map.cpp"
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\New.cpp"
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Pldata.cpp"
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Rpg.cpp"
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Start.cpp"
+"C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Towns.cpp"
+]
+Creating command line "cl.exe @C:\WINDOWS\TEMP\RSP1005.TMP" 
+Creating temporary file "C:\WINDOWS\TEMP\RSP1006.TMP" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/rpg.pdb" /debug /machine:I386 /out:"Debug/rpg.exe" /pdbtype:sept 
+".\Debug\Map.obj"
+".\Debug\New.obj"
+".\Debug\Pldata.obj"
+".\Debug\Rpg.obj"
+".\Debug\Start.obj"
+".\Debug\Towns.obj"
+]
+Creating command line "link.exe @C:\WINDOWS\TEMP\RSP1006.TMP"
+<h3>Output Window</h3>
+Compiling...
+Map.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Map.cpp(3) : fatal error C1083: Cannot open include file: 'alloc.h': No such file or directory
+New.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\New.cpp(101) : fatal error C1083: Cannot open include file: 'alloc.h': No such file or directory
+Pldata.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Pldata.cpp(3) : error C2011: 'Save' : 'struct' type redefinition
+Rpg.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Rpg.cpp(6) : fatal error C1083: Cannot open include file: 'bios.h': No such file or directory
+Start.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Start.cpp(22) : fatal error C1083: Cannot open include file: 'bios.h': No such file or directory
+Towns.cpp
+C:\Program Files\Microsoft Visual Studio\MyProjects\rpg\Towns.cpp(4) : fatal error C1083: Cannot open include file: 'bios.h': No such file or directory
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+rpg.exe - 6 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

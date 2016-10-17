@@ -1,0 +1,975 @@
+// D E F I N I T I O N S
+/*	My Key Board Map
+------------------------------------------------------------
+use with (bios.h)
+	_bios_keybrd(_KEYBRD_READY)
+		to check if a key is ready to be read
+	_bios_keybrd(_NKEYBRD_READ)
+		to read scan code
+		as an unsigned
+		(unsigned char) - to get ASCII
+		(char) - Get ASCII charecter
+------------------------------------------------------------
+		  Key		code
+------------------------------------------------------------
+*/
+//   K  E  Y  B  O  A  R  D     S  C  A  N     C  O  D  E  S
+
+// A R R O W   K E Y S
+
+#define Down 20704
+#define Left 19424
+#define Right 19936
+#define Up 18656
+
+// K E Y   P A D   K E Y S
+
+#define KeyPad_Slash -8145
+#define KeyPad_Star 14122
+#define KeyPad_Minus 18989
+#define KeyPad_Plus 20011
+#define KeyPad_Enter -8179
+
+#define KeyPad_Period 21294
+
+#define KeyPad_0 21040
+#define KeyPad_1 20273
+#define KeyPad_2 20530
+#define KeyPad_3 20787
+#define KeyPad_4 19252
+#define KeyPad_5 19509
+#define KeyPad_6 19766
+#define KeyPad_7 18231
+#define KeyPad_8 18488
+#define KeyPad_9 18745
+
+#define KeyPad_Period_Num_Lock_Off 21248
+
+#define KeyPad_0_Num_Lock_Off 20992
+#define KeyPad_1_Num_Lock_Off 20224
+#define KeyPad_2_Num_Lock_Off 20480
+#define KeyPad_3_Num_Lock_Off 20736
+#define KeyPad_4_Num_Lock_Off 19200
+
+#define KeyPad_6_Num_Lock_Off 19712
+#define KeyPad_7_Num_Lock_Off 18176
+#define KeyPad_8_Num_Lock_Off 18432
+#define KeyPad_9_Num_Lock_Off 18688
+
+// C O N S O L E   K E Y S
+
+#define Insert 21216
+#define Delete 21472
+#define Home 18400
+#define End 18488
+#define Page_Up 18912
+#define Page_Down 20960
+
+// F U N C T I O N   K E Y S
+
+#define F1 15104
+#define F2 15360
+#define F3 15616
+#define F4 15872
+#define F5 16128
+#define F6 16384
+#define F7 16640
+#define F8 16896
+#define F9 17152
+#define F10 17408
+
+//   E  N  D     O  F     K  E  Y  B  O  A  R  D     S  C  A  N     C  O  D  E  S
+//-------------------------------------------------------------------------------//
+/*#include <dos.h>
+#include <stdio.h>
+#include <graphics.h>
+
+int gdriver = 6, gmode = 1;
+initgraph(&gdriver, &gmode, "");
+
+void main()
+{
+	/*gdriver = 6
+	gmode =1*
+	printf("Hello");
+	line(0, 0, 10, 10);
+	return;
+}*/
+// H E A D E R S
+#include <process.h>
+#include <stdio.h>
+#include <alloc.h>
+#include <bios.h>
+#include <graphics.h>
+#include <dos.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <string.h>
+
+#include <dir.h> // for the new directory search method
+
+#define TheColors 9
+
+
+#include <string.h>
+
+#include <math.h> // used in soundfx
+
+// D E F I N I T I O N S
+#define conversionfactor 65536 // long int / conversionfactor = short int
+
+#define textcoordinate textvsize()
+#define menumargin 512
+#define PI 3.14159265359
+#define choices 8
+#define text_margin 26
+
+char string_transfere[64]="";
+
+typedef float stat;
+typedef char critstat;
+typedef unsigned int idstat;
+
+// C H A R E C T E R   V A R I A B L E S
+// C H A R E C T E R  D A T A
+
+struct Save {
+//stat life; // 32b, grows with and only with age - amount of HP REMOVED
+stat constitution; // 32b, grows with survival of tough physical battles
+	// (25%) and strenght(75%) - ability to resist physical damage
+stat spirit; // 32b, grows with suvival of powerful magical battles (25%)
+	// and mind(75%) - ability to resist magically inflicted damage
+stat agility; // 32b, grows with greater use of evasive techniques (75%) and
+	// speed(25%) - reaction time to dodge command
+stat speed; // 32b, grows with greater use of light weapons and fast
+	// attacks(90%) and forcefull attacks with light (resist free) weapons (10%)
+	// - reaction time to attack command
+stat strength; // 32b, grows with greater use of heavy equiptment (100%),
+	// and heavy attacks on light targets - power in hits reduces affect of
+	// weight on your speed
+stat mind; // 32b, grows with greater use of magic - increases the effect of each
+	// magic point (32767)
+stat gold; // 32b, money possessed
+critstat mp; // 8b, current magic points (percent total, battle only)
+critstat hitpoints; // 8b, current hit point (used to store the percentage of total hitpoints)
+critstat poison; // 8b, stores degree of poison (0 to 4x) [divide by 64]
+// constitution, spirit, agility, speed, strength, mind (all =  16777216 * 5 at birth)
+// gold, hitpoints, poison (50, 100, 0 respectively)
+// mp (battle only) (100 always)
+// 0-128 range for critstats (keep at 0-100)
+// tally 280 bits or 35 Bytes 10 variables
+
+// (x1max + 1)*x2 + x1 // intergration formula
+
+// G A M E   V A R I A B L E S
+
+critstat mapnumber; // 8b, current world map
+critstat mapx; // 8b, x coordinate on world map
+critstat mapy; // 8b, y coordinate on world map
+critstat story; // 8b, point in story
+critstat mission; // 8b, mission number
+
+// in town/dungeon only
+critstat townx; // 8b, x coordinate in town/dungeon
+critstat towny; // 8b, y coordinate in town/dungeon
+// tally 56 bits or 7 Bytes 7 variables
+
+critstat map[64][35]; // used identifying space types for current map (world/town/dungeon)
+//  17920 bytes or  2240 Bytes 1 array
+
+// I T E M S   A R R A Y S
+
+idstat itemname[100]; // stores the id number of all of your items
+idstat equiptmentname[100]; // stores the id number of all of your equiptment
+critstat itemquantity[100]; // stores quantity of each of you items
+critstat equiptmenthealth[100]; // stores health of each peice of your equiptment
+
+idstat equipped[12]; // {right_hand, left_hand, chest, arms, legs, head, item_1,
+						//item_2, item_3, item_4, item_5, item_6} stores user settings
+idstat history[100];
+};
+
+typedef struct Save PlayerData;
+PlayerData Player;
+
+// data on each item/equiptment peice is stored with in the program
+// tally  4,800 bits or 600 Bytes
+
+// G E N E R A L   U S E   S T O R A G E
+
+void far *graphbuffer[2]; // graphics buffer
+
+// S A V E   F I L E   A R R A Y
+
+char save_file[9];
+
+// M U S I C   V A R I B L E S   A N D   A R R A Y S
+
+float totaltime=0, oldtime=0, tempo=.1;
+int position=0, octave=4;
+char song[400]; // Music Buffer
+
+// game variable tally 336 bits or 42 Bytes
+// game array tally  24876 bits or 3112 Bytes or 3 Kilo Bytes
+// game memory requirments in initialization phase 25222 bits or 3154 Bytes or  3  Kilo Bytes
+// total of 17 variables and 5 array
+
+// Varibles saved in save file in their order
+// 32 bits/varible for varibles 1 - 7, 8 bits/varible for varibles 8 - 14, 800 bit/array for arrays at 15-18
+// constitution, spirit, agility, speed, strength, mind, hitpoints, poison, mapnumber
+// mapx, mapy, story, mission, itemname[], equiptmentname[], itemquantity[], equiptmenthealth[]
+// 3480 bits or 435 Bytes
+
+// F U N C T I O N   D E F I N I T I O N S
+// pauses with nothing (0) or music (1);
+void pause(int mode);
+// gets the float value of a stored number
+float convert_string_to_integer(char string[], int length);
+// for converting floats to strings
+void number_to_string(float thenumber, int digits, int format);
+// for converting the char value to an int value
+int charecter_to_integer(char charecter);
+// Saves Player data
+int save_player_data(void);
+// Plays a musical note
+void playnote(char note);
+// Performs the next command in a Music string
+void check_for_octave(void);
+// Loads the music into the music buffer
+void loadmusic(char filename[]);
+// Plays Loaded music
+void playmusic(float time_passed);
+// Save A single string of data to a file stream
+
+//*********************************M U S I C   F U N C T I O N S**********************************
+void loadmusic(char filename[]) // loads music
+{
+	nosound();
+	FILE *fptr;
+	if ((fptr = fopen(filename, "r")) == NULL){
+		printf("Cannot open %s.\n", filename);
+		exit(1);
+	}
+	int c;
+	int i=1;
+	// ---------
+	char all_the_chars[256], i2;
+	all_the_chars[0] = 0;
+	for (i = 1, i2 = 1; i2 != 0; i++, i2++)
+		all_the_chars[i] = i2;
+	all_the_chars[0] = 0;
+	// ---------
+	i = 0;
+	while ((c=fgetc(fptr)) != EOF){
+		song[i]=all_the_chars[c];
+		song[i+1]=0;
+		i++;
+	}
+	fclose(fptr);
+	return;
+}
+
+void playmusic(float time_passed) // plays loaded music
+{
+	totaltime+=time_passed;
+	if ((totaltime-oldtime)>(tempo))
+	{
+		oldtime=totaltime;
+		while (song[position]=='o' || song[position]=='-' || song[position]=='t')
+			check_for_octave();
+		playnote(song[position]);
+	}
+	return;
+}
+
+void check_for_octave(void) // performs next command in music string
+{
+	switch (song[position])
+	{
+		case 'o':
+			switch (song[position+1])
+			{
+				case '0':
+					octave = 0; break;
+				case '1':
+					octave = 1; break;
+				case '2':
+					octave = 2; break;
+				case '3':
+					octave = 3; break;
+				case '4':
+					octave = 4; break;
+				case '5':
+					octave = 5; break;
+				case '6':
+					octave = 6; break;
+				case '7':
+					octave = 7; break;
+				case '8':
+					octave = 8; break;
+				default:
+					octave = 4; break;
+			}
+			position+=2; break;
+		case '-':
+			nosound();
+			position++; break;
+		case 't':
+			switch (song[position+1])
+			{
+				case '0':
+					tempo = 1; break;
+				case '1':
+					tempo = .9; break;
+				case '2':
+					tempo = .8; break;
+				case '3':
+					tempo = .7; break;
+				case '4':
+					tempo = .6; break;
+				case '5':
+					tempo = .5; break;
+				case '6':
+					tempo = .4; break;
+				case '7':
+					tempo = .3; break;
+				case '8':
+					tempo = .2; break;
+				case '9':
+					tempo = .1; break;
+				default:
+					tempo = .1; break;
+			}
+			position+=2; break;
+		default:
+			break;
+	}
+	return;
+}
+
+void playnote(char note) // plays a musical note
+{
+		float freq;
+		switch (note)
+		{
+			case 'c':
+				freq = (float)262 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'd':
+				freq = (float)294 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'e':
+				freq = (float)330 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'f':
+				freq = (float)350 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'g':
+				freq = (float)392 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'a':
+				freq = (float)440 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case 'b':
+				freq = (float)494 * pow(2,(float)octave - 2);
+				sound(freq); break;
+			case ' ':
+				nosound(); break;
+			case '.':
+				position = -1;
+				totaltime=0;
+				oldtime=0;
+			default:
+				position = -1;
+				totaltime=0;
+				oldtime=0;
+				break;
+		}
+		position++;
+		return;
+}
+//*************************E N D   O F   M U S I C   F U N C T I O N S****************************
+
+void number_to_string(float thenumber, int digits, int format) // for converting floats to strings
+{
+	int i=0, ii=0;
+	strset(string_transfere, 0);
+	strcpy(string_transfere,"");
+	char string1[10];
+	strset(string1, 0);
+	strcpy(string1,"");
+	ltoa((long)thenumber, string1, 10);
+	if (format==1) {
+		if (strlen(string1)<digits) {
+			for (i=0; (strlen(string1)+strlen(string_transfere)) < digits; i++)
+			{
+				string_transfere[i]=48;
+				string_transfere[i+1]=0;
+			}
+		}
+	} /**/
+	strcat(string_transfere,string1);
+	return;
+}
+
+int charecter_to_integer(char charecter) // for converting the char value to an int value
+{
+	char c=0;
+	int result=0;
+	for (c=0; c < charecter; c++, result++);
+	return result;
+}
+
+void Save_Data(char data[100], FILE *fin) // saves data
+{
+	int i=0;
+	// encoding
+	int count=0;
+	while ((count) < strlen(data)){
+		data[count]--;
+		count++;
+	}
+	// end of encoding */
+	//printf("'%s'\n",data);
+	while (i < strlen(data)){
+		fputc(charecter_to_integer(data[i]),fin);
+		i++;
+	}
+	return;
+}
+
+void pause(int mode) // pause PAUSE;
+{
+	time_t beginT=time(NULL);
+	while ((time(NULL)-beginT) < .01)
+		if (bioskey(1) !=0)
+				char inkey = bioskey(0);
+
+	if (mode==1)
+	{
+		while (bioskey(1) == 0)
+		{
+			delay(10);
+			playmusic(.01+.001); // .01 can be set to anything
+		}
+		nosound();
+	}
+	else
+		while (bioskey(1) == 0);
+	return;
+}
+
+int save_player_data(void)
+{
+	int result = 1;
+	// Get Filename
+	char filename[20] = {'s','a','v','e','s',92,0};
+	strcat(filename,save_file);
+	strcat(filename,".sav");
+	//save data
+	FILE *fptr;
+	if ((fptr = fopen(filename, "wb")) != NULL)
+	{
+		printf("Creating player save.\n'%s'\n...\n",filename);
+		fwrite(&Player,sizeof(PlayerData),1,fptr);
+		printf("Done!\n");
+	}
+		else
+		result = 0;
+	fclose(fptr);
+	return result;
+}
+
+
+//*************************************************************************************************
+
+int group = 0;
+char note[64] = "These are the stats that you will start with, choose wisely.   ";
+
+
+void show_note(void)
+{
+
+	textcolor(0);
+	textbackground(7);
+	gotoxy(7,13);
+	cprintf(" Note: %s",note); // print note
+	textcolor(15);
+	textbackground(1);
+}
+
+void get_data(void)
+{
+	// Read User input
+	int over = 0;
+	int result;
+	// constitution + spirit + agility + speed + strength + mind
+	// intitializations
+	textbackground(3);
+	textcolor(0);
+	gotoxy(31,1);
+	cprintf("Points left:");
+
+	textbackground(1);
+	textcolor(15);
+	gotoxy(44,1);
+	cprintf("%02.0f",(30 - (Player.constitution + Player.spirit + Player.agility +
+	Player.speed + Player.strength + Player.mind)));
+	textbackground(3);
+	textcolor(0);
+
+	gotoxy(text_margin,4);
+	cprintf("Constitution:",Player.constitution);
+	gotoxy(text_margin+6,5);
+	cprintf("Spirit:",Player.spirit);
+	gotoxy(text_margin+5,6);
+	cprintf("Agility:",Player.agility);
+	gotoxy(text_margin+7,7);
+	cprintf("Speed:",Player.speed);
+	gotoxy(text_margin+4,8);
+	cprintf("Strength:",Player.strength);
+	gotoxy(text_margin+8,9);
+	cprintf("Mind:",Player.mind);
+	gotoxy(text_margin,11);
+	cprintf("Name of Save File:");
+
+
+	textcolor(4);
+	textbackground(2);
+	gotoxy(10,15);
+	cprintf("Press + or Up to raise a stat, press - or Down to lower it.");
+	gotoxy(15,16);
+	cprintf("Press Tab and Shift + Tab to switch between feilds");
+	gotoxy(17,17);
+	cprintf("Press Control + C or Control + Break to Quit.");
+	gotoxy(26,18);
+	cprintf("Press enter when your done.");
+
+	gotoxy(18,2);
+	highvideo();
+	textbackground(4);
+	textcolor(128);
+	cprintf(" C R E A T E   Y O U R   C H A R E C T E R ") ;
+	normvideo();
+	textcolor(15);
+	textbackground(1);
+
+	gotoxy(text_margin+14,4);
+	cprintf("%02.0f",Player.constitution); // clear and print
+	gotoxy(text_margin+14,5);
+	cprintf("%02.0f",Player.spirit); // clear and print
+	gotoxy(text_margin+14,6);
+	cprintf("%02.0f",Player.agility); // clear and print
+	gotoxy(text_margin+14,7);
+	cprintf("%02.0f",Player.speed); // clear and print
+	gotoxy(text_margin+14,8);
+	cprintf("%02.0f",Player.strength); // clear and print
+	gotoxy(text_margin+14,9);
+	cprintf("%02.0f",Player.mind); // clear and print
+	gotoxy(text_margin+19,11);
+	cprintf("        "); // clear text
+
+	show_note();
+
+	gotoxy(text_margin+14,4); // place cursor
+
+	// done
+	time_t start, end = time(NULL);
+	while (!over)
+	{
+		start = time(NULL);
+		if (_bios_keybrd(_KEYBRD_READY) != 0)
+		{
+
+			if (result>=choices)
+				result=choices-1;
+			unsigned inkey = _bios_keybrd(_NKEYBRD_READ);
+			if((unsigned char)inkey==13)
+			{
+				over=1;
+			}
+			if ((unsigned char)inkey==9) // tab
+			{
+				group++;
+				if (group>6)
+					group=0;
+			}
+			if ((unsigned char)inkey==0) // shift tab
+			{
+				group--;
+				if (group<0)
+					group=6;
+			}
+
+
+			if (group==6) // for
+			{
+					strcpy(note,"This is the name of the file where your data will go.          ");
+					if ((unsigned char)inkey==224);
+					else if ((unsigned char)inkey==8) // backspace
+					{
+						result++;
+						if (result>0)
+						{
+							result--;
+							char append[64];
+							for (int cn2=0; cn2 < 64; cn2++)
+								append[cn2]=0;
+							char buff[64]="";
+							for (cn2=0; cn2 < 64; cn2++)
+								buff[cn2]=0;
+							strrev(string_transfere); // reverse string
+							strncpy(append,string_transfere,strlen(string_transfere)-result); // copy after deletion point
+							strrev(string_transfere); // bring them back to foward
+							strrev(append); // ditto...
+
+							if (result>1)
+							{
+								strncpy(buff,string_transfere,result-1); // copy before deletion point
+								strcpy(string_transfere,buff); // copy beginning
+								strcat(string_transfere,append); // add end
+							}
+							else
+								strcpy(string_transfere,append); // copy remains
+						}
+						else
+						{
+							char buff[64];
+							strcpy(buff,string_transfere);
+							strrev(buff);
+							strncpy(string_transfere,buff,strlen(buff)-1);
+							strrev(string_transfere);
+						};
+						result--;
+					}
+					else if ((unsigned char)inkey==27)
+					{
+						for (int cn=0; cn < 64; cn++)
+							string_transfere[cn]=0; // clear string_transfere
+						result=0;
+					}
+					else if ((unsigned char)inkey<127 && (unsigned char)inkey>47) // limit charecters
+					{
+						string_transfere[result]=(unsigned char)inkey;
+						result++;
+					}
+
+				switch (inkey)
+				{
+					case Up:
+					result = 0;
+					break;
+					case Down:
+					result = strlen(string_transfere);
+					break;
+					case Left:
+					if (result > 0)
+						result--;
+					break;
+					case Right:
+					if (result < (choices-1))
+						result++;
+					break;
+					case Delete:
+					result++;
+					if (strlen(string_transfere)<2)
+					{
+						for (int cn=0; cn < 64; cn++)
+							string_transfere[cn]=0; // clear string_transfere
+						result=0;
+					}
+					else if (result<(strlen(string_transfere)+1)) // delete // if not at end
+					{
+						char append[64];
+						for (int cn2=0; cn2 < 64; cn2++)
+							append[cn2]=0;
+						char buff[64]="";
+						for (cn2=0; cn2 < 64; cn2++)
+							buff[cn2]=0;
+						strrev(string_transfere); // reverse string
+						strncpy(append,string_transfere,strlen(string_transfere)-result); // copy after deletion point
+						strrev(string_transfere); // bring them back to foward
+						strrev(append); // ditto...
+
+						if (result>1)
+						{
+							strncpy(buff,string_transfere,result-1); // copy before deletion point
+							strcpy(string_transfere,buff); // copy beginning
+							strcat(string_transfere,append); // add end
+						}
+						else
+							strcpy(string_transfere,append); // copy remains
+					}
+					else
+					{
+						char buff[64];
+						strcpy(buff,string_transfere);
+						strncpy(string_transfere,buff,strlen(buff)-1);
+					};
+					result--;
+					break;
+				}
+				// check up on result status
+				if (result<0)
+					result=0;
+				else if (result>=choices)
+					result=choices-1;
+				if (result>strlen(string_transfere))
+					result=strlen(string_transfere);
+
+				// show string
+				gotoxy(text_margin+19,11);
+				cprintf("        "); // clear text
+				gotoxy(text_margin+19,11);
+
+				cprintf("%s", string_transfere); // show text
+				show_note(); // print note
+				gotoxy(text_margin+19+result,11); // place cursor
+			}
+			else // if it is not updating the text feild---------------------------------------------
+			{
+				int raise = 0;
+				switch (inkey)
+				{
+					case Up:
+					raise = 1;
+					break;
+					case Down:
+					raise = -1;
+					break;
+					default:
+					switch ((unsigned char)inkey)
+					{
+						case '+':
+						raise = 1;
+						break;
+						case '-':
+						raise = -1;
+						break;
+						case '=':
+						raise = -1;
+						break;
+					}
+				}
+
+				//if ((constitution + spirit + agility + speed + strength + mind + raise - 30) > 0)
+				//	raise = 0; // prevent over adding
+				if ((30 - (Player.constitution + Player.spirit + Player.agility +
+				Player.speed + Player.strength + Player.mind)) == 0
+					&& raise == 1)
+					raise = 0; // prevent over adding
+
+				switch (group)
+				{
+					case 0:
+					Player.constitution+=raise;
+					strcpy(note,"This determins how well you survive physical damage and poison.");
+					if (Player.constitution<1)
+						Player.constitution = 1;
+					gotoxy(text_margin+14,4);
+					cprintf("%02.0f",Player.constitution); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,4); // place cursor
+					break;
+					case 1:
+					Player.spirit+=raise;
+					strcpy(note,"This determins how well you resist magical attacks.            ");
+					if (Player.spirit<1)
+						Player.spirit = 1;
+					gotoxy(text_margin+14,5);
+					cprintf("%02.0f",Player.spirit); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,5); // place cursor
+					break;
+					case 2:
+					Player.agility+=raise;
+					strcpy(note,"This determins how swiftly you can evade and move on you feet. ");
+					if (Player.agility<1)
+						Player.agility = 1;
+					gotoxy(text_margin+14,6);
+					cprintf("%02.0f",Player.agility); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,6); // place cursor
+					break;
+					case 3:
+					Player.speed+=raise;
+					strcpy(note,"This determins how quickly you can weild you weapon.           ");
+					if (Player.speed<1)
+						Player.speed = 1;
+					gotoxy(text_margin+14,7);
+					cprintf("%02.0f",Player.speed); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,7); // place cursor
+					break;
+					case 4:
+					Player.strength+=raise;
+					strcpy(note,"Allows you to weild heavy weapons easier so you can hit harder.");
+					if (Player.strength<1)
+						Player.strength = 1;
+					gotoxy(text_margin+14,8);
+					cprintf("%02.0f",Player.strength); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,8); // place cursor
+					break;
+					case 5:
+					Player.mind+=raise;
+					strcpy(note,"Allows you to cause greater effect with your spells.           ");
+					if (Player.mind<1)
+						Player.mind = 1;
+					gotoxy(text_margin+14,9);
+					cprintf("%02.0f",Player.mind); // clear and print
+					show_note(); // print note
+					gotoxy(text_margin+14,9); // place cursor
+					break;
+				}
+				// shows remaining points
+				{
+					int x = wherex(), y = wherey();
+					gotoxy(44,1);
+					cprintf("%02.0f",(30 - (Player.constitution + Player.spirit + Player.agility +
+					Player.speed + Player.strength + Player.mind)));
+					gotoxy(x,y);
+				}
+				// shows remaining points
+			 }
+
+		}
+
+		end = time(NULL);
+		if (((.01-(difftime(end,start)))*1000)>0)
+			delay( ( .01-( difftime(end,start) ) ) *1000 );
+		playmusic(.01+.001);
+	};
+	while (_bios_keybrd(_KEYBRD_READY) != 0);
+}
+
+void double_check(void)
+{
+	while (strlen(string_transfere)==0 ||
+		(30 - (Player.constitution + Player.spirit + Player.agility + Player.speed +
+		Player.strength + Player.mind)) != 0) // not done
+	{
+		get_data();
+		if (strlen(string_transfere)==0 ||
+		(30 - (Player.constitution + Player.spirit + Player.agility + Player.speed +
+		Player.strength + Player.mind)) != 0) {
+			int x = wherex(), y = wherey();
+			gotoxy(33,20);
+			cprintf("Not Done Yet!");
+			_setcursortype(_NOCURSOR);
+			getch();
+			gotoxy(1,20);
+			normvideo();
+			clreol();
+			textcolor(15);
+			textbackground(1);
+			_setcursortype(_NORMALCURSOR);
+			gotoxy(x,y);
+		}
+		else {
+			gotoxy(33,20);
+			cprintf("Now Saving...");
+			_setcursortype(_NOCURSOR);
+		}
+	}
+}
+
+void main(void)
+{
+	clrscr();
+	Player.constitution=1;
+	Player.spirit=1;
+	Player.agility=1;
+	Player.speed=1;
+	Player.strength=1;
+	Player.mind=1;
+	int done=0;
+	{ // sequence to load a new music file
+	char filename[20] = "music\\";
+	strcat(filename,"v.m");
+	loadmusic(filename);
+	} // end of sequence to load new music
+	while (!done)
+	{
+		double_check(); // get data and check it
+		nosound();
+		strcpy(save_file,string_transfere); // copy filename to global varible
+		done=1;
+		FILE *fptr;
+		// Get Filename
+		char filename[20] = {'s','a','v','e','s',92,0};
+		strcat(filename,save_file);
+		strcat(filename,".sav");
+		if ((fptr = fopen(filename, "r")) != NULL){ // if file can be opened
+			printf("\nFile: '%s' Already exist!\nOverwrite?(Y/N)", save_file);
+			pause(0);
+			char answer = getche();
+			if (answer!='Y' && answer!='y') {
+				done=0;
+				// to keep it in the loop
+				if (Player.constitution>1)
+					Player.constitution--;
+				if (Player.spirit>1)
+					Player.spirit--;
+				if (Player.agility>1)
+					Player.agility--;
+				if (Player.speed>1)
+					Player.speed--;
+				if (Player.strength>1)
+					Player.strength--;
+				if (Player.mind>1)
+					Player.mind--;
+				// to keep it in the loop
+				normvideo();
+				clrscr();
+				_setcursortype(_NORMALCURSOR);
+			}
+		}
+		fclose(fptr);
+	}
+	// Set Global Varibles
+	Player.constitution*=conversionfactor;
+	Player.spirit*=conversionfactor;
+	Player.agility*=conversionfactor;
+	Player.speed*=conversionfactor;
+	Player.strength*=conversionfactor;
+	Player.mind*=conversionfactor;
+
+	Player.gold = 50;
+	Player.hitpoints = 100;
+	Player.poison = 0;
+	Player.mapnumber = 1;
+	Player.mapx = 0;
+	Player.mapy = 0;
+	Player.mission = 1;
+	Player.story = 1;
+
+	for (int around = 0; around < 100; around++)
+	{
+		Player.itemname[around]=0;
+		Player.equiptmentname[around]=0;
+		Player.itemquantity[around]=0;
+		Player.equiptmenthealth[around]=0;
+		Player.equipped[around%12]=0;
+		Player.history[100]=0;
+
+	}
+	// Finished Setting Them
+	if (save_player_data())
+	{
+		printf("\nSuccess!\n");
+		printf("Now Loading game...");
+		{ // complete transfere of control from this program to the next
+			char *arg0 = save_file;
+			spawnlp(P_OVERLAY, "rpg", "rpg.exe",arg0, NULL);
+		} // end of transfere
+	}
+	else
+	{
+		printf("\nFailure!\nCould Not create file.");
+		exit(1);
+	}
+	pause(0);
+}

@@ -1,0 +1,12 @@
+g background 8 1 4 0 0 639 0 639 349 0 349;
+g selection side background 15 1 4
+	63 104
+	63 245
+	576 245
+	576 104;
+g selection background 0 1 6 53 104 319 173 53 245 586 245 319 173 586 104;
+l line 53 104 586 104 7 0;
+l line 53 245 586 245 7 0;
+f selcetion outline 319 173 65 65 9 1;
+f selcetion spot 319 173 60 60 1 1;
+
